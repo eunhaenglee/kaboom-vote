@@ -23,8 +23,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ 반드시 PORT 환경변수 사용해야 함
+// ✅ 이 부분이 가장 중요
 const port = process.env.PORT || 3000;
 http.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
