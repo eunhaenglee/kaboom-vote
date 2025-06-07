@@ -1,44 +1,30 @@
 const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io");
-const cors = require("cors");
-
 const app = express();
-app.use(cors());
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
+
 app.use(express.static("public"));
 
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
-
-let voteCounts = { A: 0, B: 0 };
+let votes = { A: 0, B: 0 };
 
 io.on("connection", (socket) => {
-  console.log("👤 New user connected");
+  socket.emit("update", votes);
 
-  socket.emit("update", voteCounts);
-
-  socket.on("vote", (option) => {
-    if (option === "A" || option === "B") {
-      voteCounts[option]++;
-      io.emit("update", voteCounts);
+  socket.on("vote", (choice) => {
+    if (choice === "A" || choice === "B") {
+      votes[choice]++;
+      io.emit("update", votes);
     }
   });
 
   socket.on("resetVotes", () => {
-    voteCounts = { A: 0, B: 0 };
-    io.emit("update", voteCounts);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("👋 User disconnected");
+    votes = { A: 0, B: 0 };
+    io.emit("update", votes);
   });
 });
 
-server.listen(3000, () => {
-  console.log("🚀 Server listening on http://localhost:3000");
+// ✅ 반드시 PORT 환경변수 사용해야 함
+const port = process.env.PORT || 3000;
+http.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });
