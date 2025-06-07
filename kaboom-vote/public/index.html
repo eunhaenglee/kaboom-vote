@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Kaboom Vote</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Amazon+Ember&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      background: #0e1d2f;
+      font-family: 'Amazon Ember', sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: #00a8e1;
+      margin-bottom: 50px;
+    }
+
+    .vote-container {
+      display: flex;
+      gap: 40px;
+    }
+
+    .vote-button {
+      padding: 20px 50px;
+      font-size: 24px;
+      font-weight: bold;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      outline: none;
+    }
+
+    .vote-button.a {
+      background: #f05555;
+      color: white;
+    }
+
+    .vote-button.a:hover {
+      background: #ff7777;
+    }
+
+    .vote-button.b {
+      background: #3399ff;
+      color: white;
+    }
+
+    .vote-button.b:hover {
+      background: #66b3ff;
+    }
+
+    #message {
+      margin-top: 40px;
+      font-size: 20px;
+      color: #00c3ff;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <h1>Which do you prefer?</h1>
+  <div class="vote-container">
+    <button class="vote-button a" onclick="vote('A')">A</button>
+    <button class="vote-button b" onclick="vote('B')">B</button>
+  </div>
+  <div id="message">Vote received!</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let hasVoted = false;
+
+    function vote(choice) {
+      if (hasVoted) return;
+
+      socket.emit("vote", choice);
+      hasVoted = true;
+
+      const buttons = document.querySelectorAll(".vote-button");
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = "0.6";
+        btn.style.cursor = "not-allowed";
+      });
+
+      const msg = document.getElementById("message");
+      msg.textContent = "Vote received!";
+      msg.style.opacity = 1;
+
+      // 20초 후 재투표 가능하게
+      setTimeout(() => {
+        hasVoted = false;
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          btn.style.cursor = "pointer";
+        });
+        msg.style.opacity = 0;
+      }, 20000);
+    }
+  </script>
+</body>
+</html>
